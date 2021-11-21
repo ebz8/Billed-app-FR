@@ -17,17 +17,34 @@ export default class NewBill {
   }
   handleChangeFile = e => {
     const file = this.document.querySelector(`input[data-testid="file"]`).files[0]
-    const filePath = e.target.value.split(/\\/g)
-    const fileName = filePath[filePath.length-1]
-    this.firestore
-      .storage
-      .ref(`justificatifs/${fileName}`)
-      .put(file)
-      .then(snapshot => snapshot.ref.getDownloadURL())
-      .then(url => {
-        this.fileUrl = url
-        this.fileName = fileName
-      })
+    const fileName = file.name
+    // contrôler les extensions :
+    const fileExtension = fileName.split('.').pop()
+    const acceptedExtensions = ['jpeg', 'jpg', 'png']
+    const errorMessage = this.document.querySelector('.errorMessage')
+
+    if (acceptedExtensions.includes(fileExtension)) {
+      // retirer message d'erreur :
+      errorMessage.classList.remove('errorMessage-visible')
+
+      this.firestore
+            .storage
+            .ref(`justificatifs/${fileName}`)
+            .put(file)
+            .then(snapshot => snapshot.ref.getDownloadURL())
+            .then(url => {
+              this.fileUrl = url
+              this.fileName = fileName
+            })
+    } else {
+      // le nom du fichier est affiché "null" :
+      this.fileUrl = null
+      this.fileName = null
+      // remplacer image par message d'erreur :
+      errorMessage.classList.add('errorMessage-visible')
+    }
+
+    
   }
   handleSubmit = e => {
     e.preventDefault()
