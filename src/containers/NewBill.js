@@ -40,7 +40,7 @@ export default class NewBill {
       // le nom du fichier est affiché "null" :
       this.fileUrl = null
       this.fileName = null
-      // remplacer image par message d'erreur :
+      // afficher message d'erreur :
       errorMessage.classList.add('errorMessage-visible')
     }
 
