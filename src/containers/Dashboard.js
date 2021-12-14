@@ -86,8 +86,10 @@ export default class {
   }
 
   handleEditTicket(e, bill, bills) {
+    console.log(this.index)
     if (this.counter === undefined || this.id !== bill.id) this.counter = 0
     if (this.id === undefined || this.id !== bill.id) this.id = bill.id
+
     if (this.counter % 2 === 0) {
       bills.forEach(b => {
         $(`#open-bill${b.id}`).css({ background: '#0D5AE5' })
@@ -96,15 +98,16 @@ export default class {
       $('.dashboard-right-container div').html(DashboardFormUI(bill))
       $('.vertical-navbar').css({ height: '150vh' })
       this.counter ++
+
     } else {
       $(`#open-bill${bill.id}`).css({ background: '#0D5AE5' })
-
       $('.dashboard-right-container div').html(`
         <div id="big-billed-icon"> ${BigBilledIcon} </div>
       `)
       $('.vertical-navbar').css({ height: '120vh' })
       this.counter ++
     }
+    
     $('#icon-eye-d').click(this.handleClickIconEye)
     $('#btn-accept-bill').click((e) => this.handleAcceptSubmit(e, bill))
     $('#btn-refuse-bill').click((e) => this.handleRefuseSubmit(e, bill))
@@ -138,6 +141,7 @@ export default class {
       $(`#status-bills-container${this.index}`)
         .html(cards(filteredBills(bills, getStatus(this.index))))
       this.counter ++
+    
     } else {
       $(`#arrow-icon${this.index}`).css({ transform: 'rotate(90deg)'})
       $(`#status-bills-container${this.index}`)
@@ -146,14 +150,16 @@ export default class {
     }
 
     bills.forEach(bill => {
-      $(`#open-bill${bill.id}`).click((e) => this.handleEditTicket(e, bill, bills))
+      $(`#open-bill${bill.id}`)
+				.off("click")
+				.on("click",(e) => this.handleEditTicket(e, bill, bills))
     })
 
     return bills
-
   }
 
   // not need to cover this function by tests
+  /* istanbul ignore test */
   getBillsAllUsers = () => {
     if (this.firestore) {
       return this.firestore
@@ -174,6 +180,7 @@ export default class {
   }
     
   // not need to cover this function by tests
+  /* istanbul ignore test */
   updateBill = (bill) => {
     if (this.firestore) {
     return this.firestore
