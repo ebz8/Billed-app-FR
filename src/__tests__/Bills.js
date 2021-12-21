@@ -1,14 +1,38 @@
+import '@testing-library/jest-dom'
+
 import { screen } from "@testing-library/dom"
 import BillsUI from "../views/BillsUI.js"
 import { bills } from "../fixtures/bills.js"
 
 describe("Given I am connected as an employee", () => {
+  // comment simuler le parcours employé / admin ? (mock navigation?)
+
+  // BillsUI : IF (LOADING) RETURN LOADINGPAGE()
+  describe("When Bills Page is loading"), () => {
+    test('Then it should render the Loading Page'), () => {
+      const html = BillsUI({ loading: true })
+      document.body.innerHTML = html
+      expect(screen.getAllByText(/Loading.../)).toBeTruthy()
+      // expect(getByTestId('loading-page')).toBeInTheDocument()
+    }
+  }
+  // BillsUI : ELSE IF (ERROR) RETURN ERRORPAGE(ERROR)
+  describe("When Bills Page can't load"), () => {
+    test('Then it should render the Error Page'), () => {
+      const html = BillsUI({ error: 'some error message' })
+      document.body.innerHTML = html
+      expect(screen.getAllByText(/some error message/)).toBeTruthy()
+      // expect(getByTestId('error-message')).toBeInTheDocument()
+    }
+  }
+  
   describe("When I am on Bills Page", () => {
     test("Then bill icon in vertical layout should be highlighted", () => {
       const html = BillsUI({ data: []})
       document.body.innerHTML = html
-      //to-do write expect expression
+      // vérifier que data-testid="icon-window" a bien la classe "active-icon"
     })
+
     test("Then bills should be ordered from earliest to latest", () => {
       const html = BillsUI({ data: bills })
       document.body.innerHTML = html
@@ -18,4 +42,39 @@ describe("Given I am connected as an employee", () => {
       expect(dates).toEqual(datesSorted)
     })
   })
+
+
 })
+
+
+
+
+// test d'intégration GET
+// describe("Given I am a user connected as Employee", () => {
+//   describe("When I navigate to Dashboard", () => {
+//     test("fetches bills from mock API GET", async () => {
+//        const getSpy = jest.spyOn(firebase, "get")
+//        const bills = await firebase.get()
+//        expect(getSpy).toHaveBeenCalledTimes(1)
+//        expect(bills.data.length).toBe(4)
+//     })
+//     test("fetches bills from an API and fails with 404 message error", async () => {
+//       firebase.get.mockImplementationOnce(() =>
+//         Promise.reject(new Error("Erreur 404"))
+//       )
+//       const html = DashboardUI({ error: "Erreur 404" })
+//       document.body.innerHTML = html
+//       const message = await screen.getByText(/Erreur 404/)
+//       expect(message).toBeTruthy()
+//     })
+//     test("fetches messages from an API and fails with 500 message error", async () => {
+//       firebase.get.mockImplementationOnce(() =>
+//         Promise.reject(new Error("Erreur 500"))
+//       )
+//       const html = DashboardUI({ error: "Erreur 500" })
+//       document.body.innerHTML = html
+//       const message = await screen.getByText(/Erreur 500/)
+//       expect(message).toBeTruthy()
+//     })
+//   })
+// })
