@@ -6,9 +6,11 @@ import BillsUI from "../views/BillsUI.js"
 import { bills } from "../fixtures/bills.js"
 import Bills from "../containers/Bills.js"
 
+import { ROUTES, ROUTES_PATH } from '../constants/routes'
+import router from '../app/router.js'
+import firebase from "../__mocks__/firebase.js"
+import firestore from '../app/Firestore.js'
 import { localStorageMock } from "../__mocks__/localStorage.js"
-import firebase from "../__mocks__/firebase"
-import { ROUTES } from '../constants/routes';
 
 describe("Given I am connected as an Employee", () => {
   describe("When I navigate to Dashboard", () => {
@@ -56,28 +58,35 @@ describe("Given I am connected as an Employee", () => {
   })
   
   describe("When I am on Bills Page", () => {
-    // test("Then bill icon in vertical layout should be highlighted", () => {
-    //   // utilisateur
-    //   // Object.defineProperty(window, 'localStorage', { value: localStorageMock })
-    //   // window.localStorage.setItem('user', JSON.stringify({
-    //   //   type: 'Employee'
-    //   // }))
+    beforeAll(() => {
+      // configuration de l'utilisateur
+      Object.defineProperty(window, 'localStorage', {
+        value: localStorageMock
+      })
+      window.localStorage.setItem(
+        'user',
+        JSON.stringify({
+          type: 'Employee',
+          email: 'johndoe@email.com',
+          password: 'azerty',
+          status: 'connected',
+        })
+      )
+      // configuration du router
+      window.location.assign(ROUTES_PATH['Bills'])
+    })
 
-    //   Object.defineProperty(window, 'localStorage', { value: localStorageMock })
-    //   const user = JSON.stringify({
-    //     type: 'Employee'
-    //   })
-    //   window.localStorage.setItem('user', user)
-    //   // page
-    //   const html = BillsUI({ data: []})      
-    //   document.body.innerHTML = html
+    // test("Then bill icon in vertical layout should be highlighted", async () => {      
+    //   // window.location.assign(ROUTES_PATH['Bills'])
+    //   const firestore = null
+    //   document.body.innerHTML = `<div id="root"></div>`
+    //   await router()
 
     //   const iconBill = screen.getByTestId('icon-window')
     //   const iconMail = screen.getByTestId('icon-mail')
 
-    //   // expect(iconBill).toBeTruthy()
-		// 	expect(iconBill.classList.contains('active-icon')).toBeTruthy()
-    //   expect(iconMail.classList.contains('active-icon')).not.toBeTruthy()
+		// 	expect(iconBill.toHaveClass('active-icon')).toBeTruthy()
+    //   expect(iconMail.toHaveClass('active-icon')).not.toBeTruthy()
     // })
 
     test("Then bills should be ordered from earliest to latest", () => {
@@ -101,7 +110,6 @@ describe("Given I am connected as an Employee", () => {
 
       const handleClick = jest.spyOn(containerBills, 'handleClickNewBill')
       const buttonNewBill = screen.getByRole('button', {  name: /nouvelle note de frais/i})
-      // pourquoi ne fonctionne qu'en rajoutant l'event listener déjà présent dans Bills?
       buttonNewBill.addEventListener('click', handleClick)
       userEvent.click(buttonNewBill)
 
@@ -113,12 +121,9 @@ describe("Given I am connected as an Employee", () => {
       // mock bootstrap
       $.fn.modal = jest.fn()
 
-      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
-      window.localStorage.setItem('user', JSON.stringify({
-        type: 'Employee'
-      }))
       const html = BillsUI({ data: bills })
       document.body.innerHTML = html
+
       const onNavigate = (pathname) => {
         document.body.innerHTML = ROUTES({ pathname })
       }
@@ -131,22 +136,20 @@ describe("Given I am connected as an Employee", () => {
       const iconEye = iconsEye[0]
       iconEye.addEventListener('click', handleClick(iconEye))
       // fonctionne avec ou sans la simulation du clic....
-      userEvent.click(iconEye)
-
-
+      fireEvent.click(iconEye)
+      
+      
       // tester les éléments en hidden true : comment les passer en non dissimulé?
-      const modal = screen.getByRole('dialog', { hidden: true })
+      // const modal = screen.getByRole('dialog', { hidden: true })
+      const modals = screen.getAllByTestId('modaleFile')
+      const modal = modals[0]
       // const modalTitle = screen.getByRole('heading', {  name: /justificatif/i})
       const attachedFile = iconsEye[0].getAttribute('data-bill-url').split('?')[0]
 
       expect(handleClick).toHaveBeenCalled()
       expect(modal).toBeVisible()
+      // expect(modal.toHaveClass('show')).toBeTruthy()
 			expect(modal.innerHTML.includes(attachedFile)).toBeTruthy()
       })
   })
 })
-
-      // Object.defineProperty(window, 'localStorage', { value: localStorageMock })
-      // const user = JSON.stringify({
-      //   type: 'Employee'
-      // })
