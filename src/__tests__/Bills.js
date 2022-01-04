@@ -12,16 +12,19 @@ import firebase from "../__mocks__/firebase.js"
 import firestore from '../app/Firestore.js'
 import { localStorageMock } from "../__mocks__/localStorage.js"
 
+import { prettyDOM } from "@testing-library/dom"
+
 describe("Given I am connected as an Employee", () => {
+  
   describe("When I navigate to Dashboard", () => {
     // TEST GET
-    test("fetches bills from mock API GET", async () => {
+    test("Fetches bills from mock API GET", async () => {
        const getSpy = jest.spyOn(firebase, "get")
        const bills = await firebase.get()
        expect(getSpy).toHaveBeenCalledTimes(1)
        expect(bills.data.length).toBe(4)
     })
-    test("fetches bills from an API and fails with 404 message error", async () => {
+    test("Fetches bills from an API and fails with 404 message error", async () => {
       firebase.get.mockImplementationOnce(() =>
         Promise.reject(new Error("Erreur 404"))
       )
@@ -30,7 +33,7 @@ describe("Given I am connected as an Employee", () => {
       const message = screen.getByText(/Erreur 404/)
       expect(message).toBeTruthy()
     })
-    test("fetches messages from an API and fails with 500 message error", async () => {
+    test("Fetches messages from an API and fails with 500 message error", async () => {
       firebase.get.mockImplementationOnce(() =>
         Promise.reject(new Error("Erreur 500"))
       )
@@ -58,8 +61,9 @@ describe("Given I am connected as an Employee", () => {
   })
   
   describe("When I am on Bills Page", () => {
+
     beforeAll(() => {
-      // configuration de l'utilisateur
+      // configuration du localStorage et de l'utilisateur
       Object.defineProperty(window, 'localStorage', {
         value: localStorageMock
       })
@@ -74,27 +78,35 @@ describe("Given I am connected as an Employee", () => {
       )
       // configuration du router
       window.location.assign(ROUTES_PATH['Bills'])
+      // Object.defineProperty(window, "location", {
+      //   value: {
+      //     hash: ROUTES_PATH["Bills"],
+      //   },
+      // })
+      
     })
 
-    // test("Then bill icon in vertical layout should be highlighted", async () => {      
-    //   // window.location.assign(ROUTES_PATH['Bills'])
-    //   const firestore = null
-    //   document.body.innerHTML = `<div id="root"></div>`
-    //   await router()
 
-    //   const iconBill = screen.getByTestId('icon-window')
-    //   const iconMail = screen.getByTestId('icon-mail')
+    test("Then bill icon in vertical layout should be highlighted", async () => {   
+      document.body.innerHTML = `<div id="root"></div>`
+      await router()
 
-		// 	expect(iconBill.toHaveClass('active-icon')).toBeTruthy()
-    //   expect(iconMail.toHaveClass('active-icon')).not.toBeTruthy()
-    // })
+      const iconBill = screen.getByTestId('icon-window')
+      const iconMail = screen.getByTestId('icon-mail')
+
+			expect(iconBill.toHaveClass('active-icon')).toBeTruthy()
+      expect(iconMail.toHaveClass('active-icon')).not.toBeTruthy()
+      console.log(prettyDOM(document, 20000))
+    })
 
     test("Then bills should be ordered from earliest to latest", () => {
       const html = BillsUI({ data: bills })
       document.body.innerHTML = html
+
       const dates = screen.getAllByText(/^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/i).map(a => a.innerHTML)
       const antiChrono = (a, b) => ((a < b) ? 1 : -1)
       const datesSorted = [...dates].sort(antiChrono)
+
       expect(dates).toEqual(datesSorted)
     })
 
@@ -138,13 +150,14 @@ describe("Given I am connected as an Employee", () => {
       // fonctionne avec ou sans la simulation du clic....
       fireEvent.click(iconEye)
       
-      
       // tester les éléments en hidden true : comment les passer en non dissimulé?
       // const modal = screen.getByRole('dialog', { hidden: true })
       const modals = screen.getAllByTestId('modaleFile')
       const modal = modals[0]
       // const modalTitle = screen.getByRole('heading', {  name: /justificatif/i})
       const attachedFile = iconsEye[0].getAttribute('data-bill-url').split('?')[0]
+      
+      console.log(prettyDOM(document, 20000))
 
       expect(handleClick).toHaveBeenCalled()
       expect(modal).toBeVisible()
