@@ -9,7 +9,7 @@ import Bills from "../containers/Bills.js"
 import { ROUTES, ROUTES_PATH } from '../constants/routes'
 import router from '../app/router.js'
 import firebase from "../__mocks__/firebase.js"
-import firestore from '../app/Firestore.js'
+// import firestore from '../app/Firestore.js'
 import { localStorageMock } from "../__mocks__/localStorage.js"
 
 import { prettyDOM } from "@testing-library/dom"
@@ -62,8 +62,32 @@ describe("Given I am connected as an Employee", () => {
   
   describe("When I am on Bills Page", () => {
 
-    beforeAll(() => {
-      // configuration du localStorage et de l'utilisateur
+    // beforeAll(() => {
+    //   // configuration du localStorage et de l'utilisateur
+    //   Object.defineProperty(window, 'localStorage', {
+    //     value: localStorageMock
+    //   })
+    //   window.localStorage.setItem(
+    //     'user',
+    //     JSON.stringify({
+    //       type: 'Employee',
+    //       email: 'johndoe@email.com',
+    //       password: 'azerty',
+    //       status: 'connected',
+    //     })
+    //   )
+    //   // configuration du router
+    //   // window.location.assign(ROUTES_PATH['Bills'])
+    //   Object.defineProperty(window, "location", {
+    //     value: {
+    //       hash: ROUTES_PATH["Bills"],
+    //     },
+    //   })
+      
+    // })
+
+
+    test("Then bill icon in vertical layout should be highlighted", () => {   
       Object.defineProperty(window, 'localStorage', {
         value: localStorageMock
       })
@@ -71,25 +95,13 @@ describe("Given I am connected as an Employee", () => {
         'user',
         JSON.stringify({
           type: 'Employee',
-          email: 'johndoe@email.com',
-          password: 'azerty',
-          status: 'connected',
         })
       )
+
       // configuration du router
       window.location.assign(ROUTES_PATH['Bills'])
-      // Object.defineProperty(window, "location", {
-      //   value: {
-      //     hash: ROUTES_PATH["Bills"],
-      //   },
-      // })
-      
-    })
-
-
-    test("Then bill icon in vertical layout should be highlighted", async () => {   
-      document.body.innerHTML = `<div id="root"></div>`
-      await router()
+			document.body.innerHTML = `<div id="root"></div>`
+      router()
 
       const iconBill = screen.getByTestId('icon-window')
       const iconMail = screen.getByTestId('icon-mail')
@@ -132,7 +144,6 @@ describe("Given I am connected as an Employee", () => {
     test("Then I can click on the Eye button to render the modal with the attached file", () => {
       // mock bootstrap
       $.fn.modal = jest.fn()
-
       const html = BillsUI({ data: bills })
       document.body.innerHTML = html
 
@@ -146,22 +157,18 @@ describe("Given I am connected as an Employee", () => {
       const handleClick = jest.spyOn(containerBills, 'handleClickIconEye')
       const iconsEye = screen.getAllByTestId('icon-eye')
       const iconEye = iconsEye[0]
+
       iconEye.addEventListener('click', handleClick(iconEye))
-      // fonctionne avec ou sans la simulation du clic....
-      fireEvent.click(iconEye)
+      // userEvent.click(iconEye)
       
-      // tester les éléments en hidden true : comment les passer en non dissimulé?
-      // const modal = screen.getByRole('dialog', { hidden: true })
-      const modals = screen.getAllByTestId('modaleFile')
-      const modal = modals[0]
-      // const modalTitle = screen.getByRole('heading', {  name: /justificatif/i})
+      const modal = screen.getByRole('dialog', { hidden: true })
       const attachedFile = iconsEye[0].getAttribute('data-bill-url').split('?')[0]
-      
-      console.log(prettyDOM(document, 20000))
 
       expect(handleClick).toHaveBeenCalled()
       expect(modal).toBeVisible()
-      // expect(modal.toHaveClass('show')).toBeTruthy()
+      iconEye.addEventListener('click', () => {
+        expect(modal).toHaveClass("show")
+      })
 			expect(modal.innerHTML.includes(attachedFile)).toBeTruthy()
       })
   })
