@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom'
-import { screen, fireEvent } from "@testing-library/dom"
+import { screen } from "@testing-library/dom"
 import userEvent from '@testing-library/user-event'
 
 import NewBillUI from "../views/NewBillUI.js"
@@ -9,7 +9,6 @@ import BillsUI from "../views/BillsUI.js"
 import { ROUTES, ROUTES_PATH } from '../constants/routes'
 import { localStorageMock } from '../__mocks__/localStorage.js'
 import firebase from '../__mocks__/firebase.js'
-import router from '../app/router.js'
 
 // Débugging
 // screen.debug(document, 20000)
@@ -47,17 +46,11 @@ beforeEach(() => {
       localStorage: window.localStorage,
     })
 })
-  
-
-    // const fileInput = document.querySelector(`input[data-testid="file"]`)
-    // const fileInput = screen.getByTestId('file')
-    // // configuration du router
-    // window.location.assign(ROUTES_PATH['NewBill'])
-    
 
 describe("Given I am connected as an employee", () => {
   
   describe("When I am on NewBill Page", () => {
+    
     test("Then the form should render with his inputs", () => {
       const input = document.querySelector('form')
       const form = screen.getByTestId('form-new-bill')
@@ -68,9 +61,10 @@ describe("Given I am connected as an employee", () => {
     })
 
     
-
     describe("When I upload a file through the form", () => {
+
       describe("If the file has a non-accepted format", () => {
+
         test("Then it should display an error message and the submit method can't be called", () => {
           const fileInput = screen.getByTestId('file')
           const file = new File(['test'], 'badFormat.pdf', { type: 'application/pdf' })
@@ -88,7 +82,6 @@ describe("Given I am connected as an employee", () => {
           expect(errorMsg).toHaveClass('errorMessage-visible')
           expect(handleSubmitForm).not.toHaveBeenCalled()
           expect(fileInput.value).toBe('')
-          // expect(fileInput.files[0]).toBeUndefined()
         })
       })
 
@@ -99,15 +92,15 @@ describe("Given I am connected as an employee", () => {
           const file = new File(['test'], 'goodFormat.jpg', { type: 'image/jpg' })
           fileInput.addEventListener('change', handleChange)
           userEvent.upload(fileInput, file)
+          // fireEvent.change(fileInput)
           const errorMsg = screen.getByText(/format d'image invalide\. merci de télécharger un fichier jpg, jpeg ou png\./i)
           
           // envoi du formulaire
-          const handleSubmitForm = jest.spyOn(containerNewBill, 'handleSubmit')
           // const formNewBill = screen.getByTestId('form-new-bill')
+          const handleSubmitForm = jest.spyOn(containerNewBill, 'handleSubmit')
           const btnSendForm = screen.getByRole('button', { name: /envoyer/i })
           userEvent.click(btnSendForm)
-          // formNewBill.addEventListener('submit', handleSubmitForm)
-          // fireEvent.submit(handleSubmitForm)
+     
   
           expect(handleChange).toHaveBeenCalled()
           expect(handleSubmitForm).toHaveBeenCalled()
@@ -136,7 +129,7 @@ describe("When I submit a valid form", () => {
   test("Then it should create a new bill ", async () => {  
     containerNewBill.createBill = (bill) => bill
 
-    // mock firestore ?
+    // comment faire avec le firestore ?
 
     screen.getByTestId('expense-type').value = testBill.type
     screen.getByTestId('expense-name').value = testBill.name
@@ -153,35 +146,33 @@ describe("When I submit a valid form", () => {
   userEvent.click(btnSendForm)
 
   expect(handleSubmitForm).toHaveBeenCalled()
-  // comment simuler le remplissage et l'envoi du formulaire ?
-  // const testBills = await firebase.post(testBill) 
   })
 
-  describe("Then I POST a new bill", () => {
-    // TEST INTEGRATION POST
-    test("Push bill to mock API POST", async () => {
-       const postSpy = jest.spyOn(firebase, 'post')
-       const bills = await firebase.post(testBill)
-       expect(postSpy).toHaveBeenCalledTimes(1)
-       expect(bills.data.length).toBe(1)
-    })
-    test("Push bill to API and fails with 404 message error", async () => {
-      firebase.post.mockImplementationOnce(() =>
-        Promise.reject(new Error('Erreur 404'))
-      )
-      const html = BillsUI({ error: 'Erreur 404' })
-      document.body.innerHTML = html
-      const message = screen.getByText(/Erreur 404/)
-      expect(message).toBeTruthy()
-    })
-    test("Push bill to API and fails with 500 message error", async () => {
-      firebase.post.mockImplementationOnce(() =>
-        Promise.reject(new Error('Erreur 500'))
-      )
-      const html = BillsUI({ error: 'Erreur 500' })
-      document.body.innerHTML = html
-      const message = screen.getByText(/Erreur 500/)
-      expect(message).toBeTruthy()
-    })
+  // TEST INTEGRATION POST
+  test("Then push bill to mock API POST", async () => {
+    const postSpy = jest.spyOn(firebase, 'post')
+    const bills = await firebase.post(testBill)
+    expect(postSpy).toHaveBeenCalledTimes(1)
+    expect(bills.data.length).toBe(1)
   })
+
+  test("Then push bill to API and fails with 404 message error", async () => {
+    firebase.post.mockImplementationOnce(() =>
+      Promise.reject(new Error('Erreur 404'))
+    )
+    const html = BillsUI({ error: 'Erreur 404' })
+    document.body.innerHTML = html
+    const message = screen.getByText(/Erreur 404/)
+    expect(message).toBeTruthy()
+  })
+    
+  test("Then bill to API and fails with 500 message error", async () => {
+    firebase.post.mockImplementationOnce(() =>
+      Promise.reject(new Error('Erreur 500'))
+    )
+    const html = BillsUI({ error: 'Erreur 500' })
+    document.body.innerHTML = html
+    const message = screen.getByText(/Erreur 500/)
+    expect(message).toBeTruthy()
+    })
 })
