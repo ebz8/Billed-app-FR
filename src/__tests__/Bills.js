@@ -7,10 +7,10 @@ import { bills } from "../fixtures/bills.js"
 import Bills from "../containers/Bills.js"
 
 import { ROUTES, ROUTES_PATH } from '../constants/routes'
-import Router from '../app/router.js'
-import firebase from "../__mocks__/firebase.js"
-import Firestore from '../app/Firestore.js'
-import { localStorageMock } from "../__mocks__/localStorage.js"
+import Router from '../app/Router.js'
+import firestore from '../app/Firestore.js'
+import firebase from '../__mocks__/firebase.js'
+import { localStorageMock } from '../__mocks__/localStorage.js'
 
 import { prettyDOM } from "@testing-library/dom"
 
@@ -37,7 +37,8 @@ describe("Given I am connected as an Employee", () => {
   describe("When I am on Bills Page", () => {
 
     test("Then bill icon in vertical layout should be highlighted",  () => {  
-      // Problème avec le Firestore ? (erreur jest : this.store.collection is not a function)
+      // mock firestore
+      firestore.bills = () => ({ bills, get: jest.fn().mockResolvedValue()})
 
       Object.defineProperty(window, 'localStorage', {
         value: localStorageMock
@@ -48,7 +49,7 @@ describe("Given I am connected as an Employee", () => {
           type: 'Employee',
         })
       )
-      // configuration du router
+
       window.location.assign(ROUTES_PATH['Bills'])
       document.body.innerHTML = `<div id='root'></div>`
       Router()
@@ -56,9 +57,8 @@ describe("Given I am connected as an Employee", () => {
       const iconBill = screen.getByTestId('icon-window')
       const iconMail = screen.getByTestId('icon-mail')
 
-			expect(iconBill.toHaveClass('active-icon')).toBeTruthy()
-      expect(iconMail.toHaveClass('active-icon')).not.toBeTruthy()
-      console.log(prettyDOM(document, 20000))
+      expect(iconBill.classList.contains('active-icon')).toBeTruthy()
+      expect(iconMail.classList.contains('active-icon')).toBeFalsy()
     })
 
     test("Then bills should be ordered from earliest to latest", () => {
@@ -70,7 +70,6 @@ describe("Given I am connected as an Employee", () => {
       const datesSorted = [...dates].sort(antiChrono)
 
       expect(dates).toEqual(datesSorted)
-      // console.log(datesSorted)
     })
 
     test("Then I can click on the NewBill button to access to the form", () => {
