@@ -8,11 +8,22 @@ import Bills from "../containers/Bills.js"
 
 import { ROUTES, ROUTES_PATH } from '../constants/routes'
 import Router from '../app/Router.js'
-import firestore from '../app/Firestore.js'
+import Firestore from '../app/Firestore.js'
 import firebase from '../__mocks__/firebase.js'
 import { localStorageMock } from '../__mocks__/localStorage.js'
 
 import { prettyDOM } from "@testing-library/dom"
+
+// SET UP MODE EMPLOYÉ
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock
+})
+window.localStorage.setItem(
+  'user',
+  JSON.stringify({
+    type: 'Employee',
+  })
+)
 
 describe("Given I am connected as an Employee", () => {
 
@@ -38,17 +49,7 @@ describe("Given I am connected as an Employee", () => {
 
     test("Then bill icon in vertical layout should be highlighted",  () => {  
       // mock firestore
-      firestore.bills = () => ({ bills, get: jest.fn().mockResolvedValue()})
-
-      Object.defineProperty(window, 'localStorage', {
-        value: localStorageMock
-      })
-      window.localStorage.setItem(
-        'user',
-        JSON.stringify({
-          type: 'Employee',
-        })
-      )
+      Firestore.bills = () => ({ bills, get: jest.fn().mockResolvedValue()})
 
       window.location.assign(ROUTES_PATH['Bills'])
       document.body.innerHTML = `<div id='root'></div>`
@@ -57,8 +58,8 @@ describe("Given I am connected as an Employee", () => {
       const iconBill = screen.getByTestId('icon-window')
       const iconMail = screen.getByTestId('icon-mail')
 
-      expect(iconBill.classList.contains('active-icon')).toBeTruthy()
-      expect(iconMail.classList.contains('active-icon')).toBeFalsy()
+      expect(iconBill).toHaveClass('active-icon')
+      expect(iconMail).not.toHaveClass('active-icon')
     })
 
     test("Then bills should be ordered from earliest to latest", () => {

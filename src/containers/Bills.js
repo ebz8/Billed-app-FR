@@ -37,7 +37,9 @@ export default class {
       .bills()
       .get()
       .then(snapshot => {
+        const antiChrono = (a, b) => ((a < b) ? 1 : -1)
         const bills = snapshot.docs
+          .sort(antiChrono)
           .map(doc => {
             try {
               return {
