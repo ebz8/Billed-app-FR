@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom'
-import { screen } from "@testing-library/dom"
+import { screen, fireEvent } from "@testing-library/dom"
 import userEvent from '@testing-library/user-event'
 
 import NewBillUI from "../views/NewBillUI.js"
@@ -65,46 +65,38 @@ describe("Given I am connected as an employee", () => {
 
       describe("If the file has a non-accepted format", () => {
 
-        test("Then it should display an error message and the submit method can't be called", () => {
+        test("Then it should display an error message and the file can't be uploaded", () => {
           const fileInput = screen.getByTestId('file')
           const file = new File(['test'], 'badFormat.pdf', { type: 'application/pdf' })
           const errorMsg = screen.getByText(/format d'image invalide\. merci de télécharger un fichier jpg, jpeg ou png\./i)
           const handleChange = jest.spyOn(containerNewBill, 'handleChangeFile')
-          fileInput.addEventListener('change', handleChange)
+
           userEvent.upload(fileInput, file)
-          
-          // envoi du formulaire
-          const btnSendForm = screen.getByRole('button', { name: /envoyer/i })
-          const handleSubmitForm = jest.spyOn(containerNewBill, 'handleSubmit')
-          userEvent.click(btnSendForm)
+          // fileInput.addEventListener('change', handleChange)
+          // fireEvent.change(fileInput, file)
           
           expect(handleChange).toHaveBeenCalled()
           expect(errorMsg).toHaveClass('errorMessage-visible')
-          expect(handleSubmitForm).not.toHaveBeenCalled()
-          expect(fileInput.value).toBe('')
+          expect(input.value).toBe('')
         })
       })
 
       describe("If the file has an accepted format", () => {
-        test("Then it should not display an error message", () => {
-          const handleChange = jest.spyOn(containerNewBill, 'handleChangeFile')
+        test("Then it can submit the form without any error message", () => {
           const fileInput = screen.getByTestId('file')
           const file = new File(['test'], 'goodFormat.jpg', { type: 'image/jpg' })
-          fileInput.addEventListener('change', handleChange)
-          userEvent.upload(fileInput, file)
-          // fireEvent.change(fileInput)
           const errorMsg = screen.getByText(/format d'image invalide\. merci de télécharger un fichier jpg, jpeg ou png\./i)
-          
-          // envoi du formulaire
-          // const formNewBill = screen.getByTestId('form-new-bill')
-          const handleSubmitForm = jest.spyOn(containerNewBill, 'handleSubmit')
-          const btnSendForm = screen.getByRole('button', { name: /envoyer/i })
-          userEvent.click(btnSendForm)
-     
-  
+          const handleChange = jest.spyOn(containerNewBill, 'handleChangeFile')
+         
+          userEvent.upload(fileInput, file)
+          // fileInput.addEventListener('change', handleChange)
+          // fireEvent.change(fileInput, file)
+        
           expect(handleChange).toHaveBeenCalled()
-          expect(handleSubmitForm).toHaveBeenCalled()
           expect(errorMsg).not.toHaveClass('errorMessage-visible') 
+          expect(fileInput.files[0]).toStrictEqual(file)
+          expect(fileInput.files.item(0)).toStrictEqual(file)
+          expect(fileInput.files).toHaveLength(1)
         })
       })
     })
@@ -112,12 +104,13 @@ describe("Given I am connected as an employee", () => {
 })
 
 describe("When I submit a valid form", () => {
+  // const email = JSON.parse(localStorage.getItem('user')).email
   const testBill = {
     email : 'cedric.hiely@billed.com',
     type: 'Transports',
     name: 'Vol Paris Londres',
-    date: '2022-01-01',
     amount: 348,
+    date: '2022-01-01',
     vat: '70',
     pct: 20,
     commentary: '',
@@ -126,11 +119,8 @@ describe("When I submit a valid form", () => {
     status: 'pending'
   }
 
-  test("Then it should create a new bill ", async () => {  
-    containerNewBill.createBill = (bill) => bill
-
-    // comment faire avec le firestore ?
-
+  test("Then it should create a new bill and go back to the Bills Page", async () => {  
+    // simuler le remplissage des champs du formulaire (mais test fonctionne sans)
     screen.getByTestId('expense-type').value = testBill.type
     screen.getByTestId('expense-name').value = testBill.name
     screen.getByTestId('datepicker').value = testBill.date
@@ -138,14 +128,23 @@ describe("When I submit a valid form", () => {
     screen.getByTestId('vat').value = testBill.vat
     screen.getByTestId('pct').value = testBill.pct
     containerNewBill.fileUrl = testBill.fileUrl
-    containerNewBill.fileName = testBill.fileName 
+    containerNewBill.fileName = testBill.fileName
 
-  const handleSubmitForm = jest.spyOn(containerNewBill, 'handleSubmit')
-  const btnSendForm = screen.getByRole('button', { name: /envoyer/i })
-  btnSendForm.addEventListener('click', handleSubmitForm)
-  userEvent.click(btnSendForm)
+    const handleSubmitForm = jest.spyOn(containerNewBill, 'handleSubmit')
+    const form = screen.getByTestId('form-new-bill')
+    form.addEventListener('submit', handleSubmitForm)
+    fireEvent.submit(form)
+    // const btnSendForm = screen.getByRole('button', { name: /envoyer/i })
+    // btnSendForm.addEventListener('click', handleSubmitForm)
+    // userEvent.click(btnSendForm)
 
-  expect(handleSubmitForm).toHaveBeenCalled()
+    const createNewBill = jest.spyOn(containerNewBill, 'createBill')
+    // est-ce que ce test est valide??
+    createNewBill(testBill)
+
+    expect(handleSubmitForm).toHaveBeenCalled()
+    expect(createNewBill).toHaveBeenCalledWith(testBill)
+    expect(screen.getByText(/mes notes de frais/i)).toBeTruthy()
   })
 
   // TEST INTEGRATION POST

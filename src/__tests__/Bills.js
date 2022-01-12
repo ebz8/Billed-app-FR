@@ -7,9 +7,9 @@ import { bills } from "../fixtures/bills.js"
 import Bills from "../containers/Bills.js"
 
 import { ROUTES, ROUTES_PATH } from '../constants/routes'
-import router from '../app/router.js'
+import Router from '../app/router.js'
 import firebase from "../__mocks__/firebase.js"
-import firestore from '../app/Firestore.js'
+import Firestore from '../app/Firestore.js'
 import { localStorageMock } from "../__mocks__/localStorage.js"
 
 import { prettyDOM } from "@testing-library/dom"
@@ -17,6 +17,7 @@ import { prettyDOM } from "@testing-library/dom"
 describe("Given I am connected as an Employee", () => {
 
   describe("When I'm on Bills Page but it's loading", () => {
+
     test('Then it should render the Loading Page', () => {
       const html = BillsUI({ loading: true })
       document.body.innerHTML = html
@@ -25,6 +26,7 @@ describe("Given I am connected as an Employee", () => {
   })
 
   describe("When Bills Page can't load", () => {
+
     test('Then it should render the Error Page', () => {
       const html = BillsUI({ error: 'some error message' })
       document.body.innerHTML = html
@@ -35,6 +37,8 @@ describe("Given I am connected as an Employee", () => {
   describe("When I am on Bills Page", () => {
 
     test("Then bill icon in vertical layout should be highlighted",  () => {  
+      // Problème avec le Firestore ? (erreur jest : this.store.collection is not a function)
+
       Object.defineProperty(window, 'localStorage', {
         value: localStorageMock
       })
@@ -45,9 +49,9 @@ describe("Given I am connected as an Employee", () => {
         })
       )
       // configuration du router
-      document.body.innerHTML = `<div id='root'></div>`
       window.location.assign(ROUTES_PATH['Bills'])
-      router()
+      document.body.innerHTML = `<div id='root'></div>`
+      Router()
 
       const iconBill = screen.getByTestId('icon-window')
       const iconMail = screen.getByTestId('icon-mail')
