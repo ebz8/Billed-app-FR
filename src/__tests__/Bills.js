@@ -8,13 +8,11 @@ import Bills from "../containers/Bills.js"
 
 import { ROUTES, ROUTES_PATH } from '../constants/routes'
 import Router from '../app/Router.js'
-import Firestore from '../app/Firestore.js'
+import firestore from '../app/Firestore.js'
 import firebase from '../__mocks__/firebase.js'
 import { localStorageMock } from '../__mocks__/localStorage.js'
 
-import { prettyDOM } from "@testing-library/dom"
-
-// SET UP MODE EMPLOYÉ
+// SET UP PAGE BILLS - MODE EMPLOYÉ
 Object.defineProperty(window, 'localStorage', {
   value: localStorageMock
 })
@@ -49,7 +47,7 @@ describe("Given I am connected as an Employee", () => {
 
     test("Then bill icon in vertical layout should be highlighted",  () => {  
       // mock firestore
-      Firestore.bills = () => ({ bills, get: jest.fn().mockResolvedValue()})
+      firestore.bills = () => ({ bills, get: jest.fn().mockResolvedValue()})
 
       window.location.assign(ROUTES_PATH['Bills'])
       document.body.innerHTML = `<div id='root'></div>`
@@ -120,14 +118,6 @@ describe("Given I am connected as an Employee", () => {
       expect(handleClick).toHaveBeenCalled()
       expect($.fn.modal).toHaveBeenCalledWith('show')
 			expect(modal.innerHTML.includes(attachedFile)).toBeTruthy()
-      })
-
-      test("Then I can click on the eye icon to logout", () => {
-        // ligne 13 (Uncovered Line)
-        //if (iconEye) iconEye.forEach(icon => {
-        //   icon.addEventListener('click', (e) => this.handleClickIconEye(icon))
-        // })
-        // new Logout({ document, localStorage, onNavigate })
       })
   })
 

@@ -15,6 +15,7 @@ export default class NewBill {
     this.fileName = null
     new Logout({ document, localStorage, onNavigate })
   }
+
   handleChangeFile = e => {
     const file = this.document.querySelector(`input[data-testid="file"]`).files[0]
     const fileName = file.name
@@ -24,31 +25,30 @@ export default class NewBill {
     const errorMessage = this.document.querySelector('.errorMessage')
 
     if (acceptedExtensions.includes(fileExtension)) {
-      // retirer message d'erreur :
       errorMessage.classList.remove('errorMessage-visible')
 
-      this.firestore
-            .storage
-            .ref(`justificatifs/${fileName}`)
-            .put(file)
-            .then(snapshot => snapshot.ref.getDownloadURL())
-            .then(url => {
-              this.fileUrl = url
-              this.fileName = fileName
-            })
+      // ajout condition firestore non null
+      if (this.firestore) {
+        this.firestore
+              .storage
+              .ref(`justificatifs/${fileName}`)
+              .put(file)
+              .then(snapshot => snapshot.ref.getDownloadURL())
+              .then(url => {
+                this.fileUrl = url
+                this.fileName = fileName
+              })
+      } 
+
     } else {
-      // le nom du fichier est affiché "null" :
       this.fileUrl = null
       this.fileName = null
-      // afficher message d'erreur :
       errorMessage.classList.add('errorMessage-visible')
     }
-
     
   }
   handleSubmit = e => {
     e.preventDefault()
-    // console.log('e.target.querySelector(`input[data-testid="datepicker"]`).value', e.target.querySelector(`input[data-testid="datepicker"]`).value)
     const email = JSON.parse(localStorage.getItem("user")).email
     const bill = {
       email,
@@ -63,9 +63,13 @@ export default class NewBill {
       fileName: this.fileName,
       status: 'pending'
     }
+    
+    // ajout condition firestore non null
+    if (this.firestore) {
     this.createBill(bill)
+    }
     this.onNavigate(ROUTES_PATH['Bills'])
-  }
+    }
 
   // not need to cover this function by tests
   /* istanbul ignore next */

@@ -30,6 +30,7 @@ export default class {
   // not need to cover this function by tests
   /* istanbul ignore next */
   getBills = () => {
+    const antiChrono = (a, b) => ((a < b) ? 1 : -1)
     const userEmail = localStorage.getItem('user') ?
       JSON.parse(localStorage.getItem('user')).email : ""
     if (this.firestore) {
@@ -37,7 +38,6 @@ export default class {
       .bills()
       .get()
       .then(snapshot => {
-        const antiChrono = (a, b) => ((a < b) ? 1 : -1)
         const bills = snapshot.docs
           .sort(antiChrono)
           .map(doc => {
@@ -59,7 +59,6 @@ export default class {
             }
           })
           .filter(bill => bill.email === userEmail)
-          console.log('length', bills.length)
         return bills
       })
       .catch(error => error)
