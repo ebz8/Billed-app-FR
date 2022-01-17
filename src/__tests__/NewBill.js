@@ -146,26 +146,48 @@ describe("Given I am connected as an employee", () => {
         })
 
       test("If I fill in and submit a correct form it should create a new bill and go back to Bills page", () => { 
+        const email = JSON.parse(localStorage.getItem('user')).email
+        const testBill = {
+          email,
+          type: 'Transports',
+          name: 'Train Paris-Marseille',
+          amount: 80,
+          date: '2022-01-15',
+          vat: '70',
+          pct: 20,
+          commentary: 'Seconde classe',
+          fileUrl: 'https://test.com/test.jpg',
+          fileName: 'test.jpg',
+          status: 'pending'
+        }
+
         // add values to inputs
         const form = screen.getByTestId("form-new-bill")
-        screen.getByTestId("expense-type").value = "Transports"
-        screen.getByTestId("expense-name").value = "Train Paris-Marseille"
-        screen.getByTestId("datepicker").value = "2022-01-15"
-        screen.getByTestId("amount").value = "80"
-        screen.getByTestId("vat").value = "70"
-        screen.getByTestId("pct").value = "20"
-        screen.getByTestId("commentary").value = "Seconde classe"
-        containerNewBill.fileName = 'test.png'
-        containerNewBill.fileUrl = 'https://test.com/test.png'
+        screen.getByTestId("expense-type").value = testBill.type
+        screen.getByTestId("expense-name").value = testBill.name
+        screen.getByTestId("datepicker").value = testBill.date
+        screen.getByTestId("amount").value = testBill.amount
+        screen.getByTestId("vat").value = testBill.vat
+        // screen.getByTestId("pct").value = ''
+        screen.getByTestId("commentary").value = testBill.commentary
+        containerNewBill.fileUrl = 'https://test.com/test.jpg'
+        containerNewBill.fileName = 'test.jpg'
 
         // mock handleSubmit method and submit form
         const handleSubmit = jest.spyOn(containerNewBill, 'handleSubmit')
         containerNewBill.createBill = (containerNewBill) => containerNewBill
         form.addEventListener('submit', handleSubmit)
-        fireEvent.submit(form)         
+        fireEvent.submit(form)       
+        
+        // // mock createBill method and click
+        // const button = screen.getByRole('button')
+        // const handleCreate = jest.spyOn(containerNewBill, 'createBill')
+        // button.addEventListener('click', handleCreate)
+        // userEvent.click(button)
 
         // check method and redirection to Bills page
         expect(handleSubmit).toHaveBeenCalled()
+        // expect(handleCreate).toHaveBeenCalledWith(testBill)
         expect(screen.getByText(/mes notes de frais/i)).toBeTruthy()
       })
     })

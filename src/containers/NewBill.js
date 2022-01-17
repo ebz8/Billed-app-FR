@@ -28,6 +28,7 @@ export default class NewBill {
       errorMessage.classList.remove('errorMessage-visible')
 
       // ajout condition firestore non null
+      /* istanbul ignore next */
       if (this.firestore) {
         this.firestore
               .storage
