@@ -5,7 +5,6 @@ import userEvent from '@testing-library/user-event'
 import NewBillUI from "../views/NewBillUI.js"
 import NewBill from "../containers/NewBill.js"
 import BillsUI from "../views/BillsUI.js"
-// import { bills } from "../fixtures/bills.js"
 
 import { ROUTES, ROUTES_PATH } from '../constants/routes'
 import Router from '../app/Router.js'
@@ -16,7 +15,7 @@ import firebase from '../__mocks__/firebase.js'
 
 // Débugging
 // screen.debug(document, 20000)
-import { prettyDOM } from "@testing-library/dom"
+// import { prettyDOM } from "@testing-library/dom"
 // console.log(prettyDOM(document, 20000))
 
 
@@ -52,14 +51,10 @@ import { prettyDOM } from "@testing-library/dom"
   //   }})}
   // }
 
-// SETUP PAGE NEWBILL - MODE EMPLOYÉ
-const html = NewBillUI()
-document.body.innerHTML = html
-
+// SETUP NEWBILL PAGE - EMPLOYEE MODE
 const onNavigate = (pathname) => { document.body.innerHTML = ROUTES({ pathname })}
-
+// config employee mode
 Object.defineProperty(window, 'localStorage', { value: localStorageMock })
-
 window.localStorage.setItem('user',
   JSON.stringify({
     type: 'Employee',
@@ -71,6 +66,7 @@ describe("Given I am connected as an employee", () => {
   describe("When I am on NewBill Page", () => {
 
     test("Then the mail icon in vertical layout should be highlighted", () => {
+      // mock navigation by router
       window.location.assign(ROUTES_PATH['NewBill'])
       document.body.innerHTML = `<div id='root'></div>`
       Router()
@@ -78,6 +74,7 @@ describe("Given I am connected as an employee", () => {
       const iconBill = screen.getByTestId('icon-window')
       const iconMail = screen.getByTestId('icon-mail')
 
+      // check active class
       expect(iconMail).toHaveClass('active-icon')
       expect(iconBill).not.toHaveClass('active-icon')
     })
@@ -86,6 +83,7 @@ describe("Given I am connected as an employee", () => {
       const input = document.querySelector('form')
       const form = screen.getByTestId('form-new-bill')
 
+      // check interface
       expect(screen.getByText(/envoyer une note de frais/i)).toBeTruthy()
       expect(form).toBeVisible()
       expect(input.length).toEqual(9)
@@ -93,48 +91,42 @@ describe("Given I am connected as an employee", () => {
 
 
     describe("When I upload a file through the form", () => {
-      test("If the file has a non-accepted format it should display an error message", () => {
-          const containerNewBill = new NewBill({
-            document,
-            onNavigate,
-            firestore: null,
-            localStorage: window.localStorage,
-          })
+      let containerNewBill
 
-          const file = new File(['test'], 'badFormat.pdf', { type: 'application/pdf' })
-          const fileInput = screen.getByTestId('file')
-          const errorMsg = screen.getByText(/format d'image invalide\. merci de télécharger un fichier jpg, jpeg ou png\./i)
-          // const handleChange = jest.spyOn(containerNewBill, 'handleChangeFile')
-          const handleChange = jest.fn(containerNewBill.handleChangeFile)
-
-          fileInput.addEventListener('change', (e) => {
-            handleChange(e);
-          })
-          userEvent.upload(fileInput, file)
-          
-          expect(handleChange).toHaveBeenCalled()
-          expect(errorMsg).toHaveClass('errorMessage-visible')
-          expect(fileInput.value).toBe('')
-      })
-
-      test("If the file is an image with an accepted format it should be in the file handler without any error message", () => {        
+      beforeEach(() => {
+        // define interface
         const html = NewBillUI()
         document.body.innerHTML = html
+        // define NewBill with firestore = null 
+        containerNewBill = new NewBill({
+          document,
+          onNavigate,
+          firestore: null,
+          localStorage: window.localStorage,
+        })
+      })
 
-        Object.defineProperty(window, 'localStorage', { value: localStorageMock })
-        window.localStorage.setItem('user',
-          JSON.stringify({
-            type: 'Employee',
-            email: 'cedric.hiely@billed.com',
-          }))
+      test("If the file has a non-accepted format it should display an error message", () => {
+        // add a file in fileInput
+        const file = new File(['test'], 'badFormat.pdf', { type: 'application/pdf' })
+        const fileInput = screen.getByTestId('file')
+        const errorMsg = screen.getByText(/format d'image invalide\. merci de télécharger un fichier jpg, jpeg ou png\./i)
+        // mock handleChangeFile method
+        const handleChange = jest.spyOn(containerNewBill, 'handleChangeFile')
+        fileInput.addEventListener('change', (e) => {
+          handleChange(e);
+        })
+        userEvent.upload(fileInput, file)
+        
+        // check method
+        expect(handleChange).toHaveBeenCalled()
+        // check error message and empty fileInput
+        expect(errorMsg).toHaveClass('errorMessage-visible')
+        expect(fileInput.value).toBe('')
+      })
 
-        const containerNewBill = new NewBill({
-            document,
-            onNavigate,
-            firestore: null,
-            localStorage: window.localStorage,
-          })
-
+      test("If the file is an image with an accepted format it should be in the file handler without any error message", () => {
+          // add a file in fileInput
           const file = new File(['test'], 'goodFormat.jpg', { type: 'image/jpg' })
           const fileInput = screen.getByTestId('file')
           const errorMsg = screen.getByText(/format d'image invalide\. merci de télécharger un fichier jpg, jpeg ou png\./i)
@@ -144,47 +136,41 @@ describe("Given I am connected as an employee", () => {
             handleChange(e);
           })
           userEvent.upload(fileInput, file)
-        
+
+        // check method
         expect(handleChange).toHaveBeenCalled()
         expect(errorMsg).not.toHaveClass('errorMessage-visible') 
-        expect(fileInput.files[0].name).toBe("goodFormat.jpg")
+        // check upload
+        expect(fileInput.files[0].name).toBe('goodFormat.jpg')
+        expect(fileInput.files).toHaveLength(1)
         })
-      })
 
-        describe("When I fill in a correct form", () => {
-          test("Then it should create a new bill and go back to Bills page", () => {
-            const html = NewBillUI()
-            document.body.innerHTML = html
+      test("If I fill in and submit a correct form it should create a new bill and go back to Bills page", () => { 
+        // add values to inputs
+        const form = screen.getByTestId("form-new-bill")
+        screen.getByTestId("expense-type").value = "Transports"
+        screen.getByTestId("expense-name").value = "Train Paris-Marseille"
+        screen.getByTestId("datepicker").value = "2022-01-15"
+        screen.getByTestId("amount").value = "80"
+        screen.getByTestId("vat").value = "70"
+        screen.getByTestId("pct").value = "20"
+        screen.getByTestId("commentary").value = "Seconde classe"
+        containerNewBill.fileName = 'test.png'
+        containerNewBill.fileUrl = 'https://test.com/test.png'
 
-            const containerNewBill = new NewBill({
-              document,
-              onNavigate,
-              firestore: null,
-              localStorage: window.localStorage,
-            })
-   
-            const handleSubmit = jest.spyOn(containerNewBill, 'handleSubmit')
+        // mock handleSubmit method and submit form
+        const handleSubmit = jest.spyOn(containerNewBill, 'handleSubmit')
+        containerNewBill.createBill = (containerNewBill) => containerNewBill
+        form.addEventListener('submit', handleSubmit)
+        fireEvent.submit(form)         
 
-            const form = screen.getByTestId("form-new-bill")
-            screen.getByTestId("expense-type").value = "Transports"
-            screen.getByTestId("expense-name").value = "Train Paris-Marseille"
-            screen.getByTestId("datepicker").value = "2022-01-15"
-            screen.getByTestId("amount").value = "80"
-            screen.getByTestId("vat").value = "70"
-            screen.getByTestId("pct").value = "20"
-            screen.getByTestId("commentary").value = "Seconde classe"
-            containerNewBill.fileName = 'test.png'
-            containerNewBill.fileUrl = 'https://test.com/test.png'
-
-            form.addEventListener('submit', handleSubmit)
-            fireEvent.submit(form)         
-
-            expect(handleSubmit).toHaveBeenCalled()
-            expect(screen.getByText(/mes notes de frais/i)).toBeTruthy()
-          })
-        })
+        // check method and redirection to Bills page
+        expect(handleSubmit).toHaveBeenCalled()
+        expect(screen.getByText(/mes notes de frais/i)).toBeTruthy()
       })
     })
+  })
+})
 
     
 // TEST INTEGRATION POST

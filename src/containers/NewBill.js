@@ -63,11 +63,7 @@ export default class NewBill {
       fileName: this.fileName,
       status: 'pending'
     }
-    
-    // ajout condition firestore non null
-    if (this.firestore) {
     this.createBill(bill)
-    }
     this.onNavigate(ROUTES_PATH['Bills'])
     }
 
