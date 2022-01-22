@@ -113,6 +113,7 @@ describe("Given I am connected as an Employee", () => {
       const handleClick = jest.spyOn(containerBills, 'handleClickIconEye')
       const iconsEye = screen.getAllByTestId('icon-eye')
       const iconEye = iconsEye[0]
+      
       iconEye.addEventListener('click', handleClick(iconEye))
       fireEvent.click(iconEye)
   
