@@ -12,45 +12,6 @@ import Router from '../app/Router.js'
 import { localStorageMock } from '../__mocks__/localStorage.js'
 import firebase from '../__mocks__/firebase.js'
 
-
-// Débugging
-// screen.debug(document, 20000)
-// import { prettyDOM } from "@testing-library/dom"
-// console.log(prettyDOM(document, 20000))
-
-
-// // MOCKS DE FIRESTORE D'AUTRES ETUDIANTS :
-// jest.mock("../app/Firestore.js", () => {
-//   return {
-//     storage: {
-//       ref: jest.fn(() => {
-//         return {
-//           put: () => {
-//             return Promise.resolve({
-//               ref: {
-//                 getDownloadURL: async () => {
-//                   return Promise.resolve("url")
-//                 },
-//               },
-//             })
-//           },
-//         }
-//       }),
-//     },
-//   }
-// })
-
-  // const mockFirestore = {
-  //   bills: jest.fn().mockReturnThis(),
-  //   add: jest.fn().mockImplementation((bill) => Promise.resolve({ data: bill })),
-  //   storage: { ref: jest.fn(() => {
-  //     return {
-  //        put: jest
-  //        .fn()
-  //        .mockResolvedValueOnce({ref: { getDownloadURL: jest.fn() }})
-  //   }})}
-  // }
-
 // SETUP NEWBILL PAGE - EMPLOYEE MODE
 const onNavigate = (pathname) => { document.body.innerHTML = ROUTES({ pathname })}
 // config employee mode
